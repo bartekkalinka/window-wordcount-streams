@@ -1,17 +1,14 @@
-import java.nio.file.Paths
-
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ThrottleMode}
-import akka.stream.scaladsl.{FileIO, Flow, Sink, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 
 import scala.concurrent.duration._
 
 object Main {
   def textFileWordsSource(path: String, interval: FiniteDuration) = {
-    val fileSource = FileIO.fromPath(Paths.get(path))
-    fileSource
-      .map(_.utf8String)
+    val fileSource = scala.io.Source.fromFile(path)
+    Source.fromIterator(fileSource.getLines)
       .flatMapConcat(longStr => Source[String](longStr.split(Array(' ', '\n', '\t')).toList))
       .filter(_.trim.length > 0)
       .throttle(1, interval, 1, ThrottleMode.Shaping)
