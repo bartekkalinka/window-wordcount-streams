@@ -4,9 +4,12 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-stream" % "2.4.12"
-)
+libraryDependencies ++= {
+  val akkaV = "2.4.11"
+  Seq(
+    "com.typesafe.akka" %% "akka-http-experimental" % akkaV
+  )
+}
 
 mainClass := Some("Main")
     
