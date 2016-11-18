@@ -1,7 +1,6 @@
 package pl.bka
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.Sink
 import akka.stream.ActorMaterializer
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
 import pl.bka.soruces.TextFileSource
@@ -16,8 +15,12 @@ object Main {
     val source = TextFileSource.words("input3.txt", 10.millis)
       .via(Top.wordWithOccurence(50, 3))
       .via(Distinct.distinct((0, "")))
-    //WebsocketDisplay(source.map(_.toString)).bind()
-    PrintlnDisplay(source).display()
+    args(0) match {
+      case "web" =>
+        WebsocketDisplay(source.map(_.toString)).bind()
+      case "stdout" =>
+        PrintlnDisplay(source).display()
+    }
   }
 }
 
