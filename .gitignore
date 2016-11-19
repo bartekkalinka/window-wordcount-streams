@@ -12,4 +12,5 @@ metastore_db
 spark-warehouse
 derby.log
 *.txt
+src/main/resources/application.conf
 
