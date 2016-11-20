@@ -8,6 +8,9 @@ import com.twitter.hbc.httpclient.auth.OAuth1
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Executors
 
+import akka.actor.{ActorRef, ActorSystem}
+import akka.stream.{Materializer, OverflowStrategy}
+import akka.stream.scaladsl.{Sink, Source}
 import com.twitter.hbc.twitter4j.Twitter4jStatusClient
 import com.google.common.collect.Lists
 import com.twitter.hbc.twitter4j.handler.StatusStreamHandler
@@ -16,26 +19,12 @@ import pl.bka.Config
 import twitter4j.{StallWarning, Status, StatusDeletionNotice}
 
 object TwitterSource {
-  private val usersCounter = new scala.collection.concurrent.TrieMap[String, Int]
-
-  private val listener = new StatusStreamHandler() {
-    override def onStatus(status: Status) {
-      val userName = status.getUser.getName
-      val prevCount = usersCounter.getOrElse(userName, 0)
-      if(prevCount >= 1) System.out.println(userName)
-      usersCounter.put(userName, prevCount + 1)
-    }
-    override def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) = {}
-    override def onTrackLimitationNotice(limit: Int) = {}
-    override def onScrubGeo(user: Long, upToStatus: Long) = {}
-    override def onStallWarning(warning: StallWarning) = {}
-    override def onException(e: Exception) = {}
-    override def onDisconnectMessage(message: DisconnectMessage) = {}
-    override def onStallWarningMessage(warning: StallWarningMessage) = {}
-    override def onUnknownMessageType(s: String) = {}
+  def run(config: Config)(implicit fm: Materializer, system: ActorSystem): Unit = {
+    val streamEntry: ActorRef = Source.actorRef(1000, OverflowStrategy.dropHead).to(Sink.foreach(println)).run
+    runTwitterClient(config, streamEntry)
   }
 
-  def run(config: Config) {
+  private def runTwitterClient(config: Config, streamEntry: ActorRef) {
     val (consumerKey, consumerSecret, token, secret) = config.twitterConfig
     val queue = new LinkedBlockingQueue[String](10000)
 
@@ -56,7 +45,7 @@ object TwitterSource {
     val service = Executors.newFixedThreadPool(numProcessingThreads)
 
     val t4jClient = new Twitter4jStatusClient(
-      client, queue, Lists.newArrayList(listener), service)
+      client, queue, Lists.newArrayList(listener(streamEntry)), service)
 
     t4jClient.connect()
 
@@ -69,7 +58,21 @@ object TwitterSource {
     client.stop()
 
     System.out.println(s"The client read ${client.getStatsTracker.getNumMessages} messages!\n")
-    System.out.println(s"Double entries: ${usersCounter.toSeq.filter(_._2 > 1)}")
+  }
+
+  private def listener(streamEntry: ActorRef) = new StatusStreamHandler() {
+    override def onStatus(status: Status) {
+      val userName = status.getUser.getName
+      streamEntry ! userName
+    }
+    override def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) = {}
+    override def onTrackLimitationNotice(limit: Int) = {}
+    override def onScrubGeo(user: Long, upToStatus: Long) = {}
+    override def onStallWarning(warning: StallWarning) = {}
+    override def onException(e: Exception) = {}
+    override def onDisconnectMessage(message: DisconnectMessage) = {}
+    override def onStallWarningMessage(warning: StallWarningMessage) = {}
+    override def onUnknownMessageType(s: String) = {}
   }
 }
 
