@@ -8,6 +8,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Executors
 
+import akka.NotUsed
 import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Sink, Source}
@@ -15,13 +16,19 @@ import com.twitter.hbc.twitter4j.Twitter4jStatusClient
 import com.google.common.collect.Lists
 import com.twitter.hbc.twitter4j.handler.StatusStreamHandler
 import com.twitter.hbc.twitter4j.message.{DisconnectMessage, StallWarningMessage}
+import org.reactivestreams.Publisher
 import pl.bka.Config
 import twitter4j.{StallWarning, Status, StatusDeletionNotice}
 
+import scala.concurrent.Future
+
 object TwitterSource {
-  def run(config: Config)(implicit fm: Materializer, system: ActorSystem): Unit = {
-    val streamEntry: ActorRef = Source.actorRef(1000, OverflowStrategy.dropHead).to(Sink.foreach(println)).run
-    runTwitterClient(config, streamEntry)
+  def source(config: Config)(implicit fm: Materializer, system: ActorSystem): Source[String, NotUsed] = {
+    import system.dispatcher
+    val (streamEntry: ActorRef, publisher: Publisher[String]) =
+      Source.actorRef[String](1000, OverflowStrategy.dropHead).toMat(Sink.asPublisher(fanout = false))((a, b) => (a, b)).run
+    Future(runTwitterClient(config, streamEntry))
+    Source.fromPublisher(publisher)
   }
 
   private def runTwitterClient(config: Config, streamEntry: ActorRef) {

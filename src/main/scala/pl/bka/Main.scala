@@ -23,7 +23,8 @@ object Main {
       case "stdout" =>
         PrintlnDisplay(source).display()
       case "twitter" =>
-        TwitterSource.run(Config(ConfigFactory.load()))
+        val twitterSource = TwitterSource.source(Config(ConfigFactory.load()))
+        PrintlnDisplay(twitterSource).display()
     }
   }
 }
