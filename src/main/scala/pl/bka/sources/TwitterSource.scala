@@ -59,12 +59,6 @@ object TwitterSource {
     for(thread <- 0 to numProcessingThreads) {
       t4jClient.process()
     }
-
-    Thread.sleep(50000)
-
-    client.stop()
-
-    System.out.println(s"The client read ${client.getStatsTracker.getNumMessages} messages!\n")
   }
 
   private def listener(streamEntry: ActorRef) = new StatusStreamHandler() {
