@@ -14,17 +14,20 @@ object Main {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
-    val source = TextFileSource.words("input3.txt", 10.millis)
-      .via(Top.wordWithOccurence(50, 3))
-      .via(Distinct.distinct((0, "")))
-    args(0) match {
+    val source =
+      args(0) match {
+        case "text" =>
+          TextFileSource.words("input3.txt", 10.millis)
+            .via(Top.wordWithOccurence(50, 3))
+            .via(Distinct.distinct((0, "")))
+        case "twitter" =>
+          TwitterSource.source(Config(ConfigFactory.load()))
+      }
+    args(1) match {
       case "web" =>
         WebsocketDisplay(source.map(_.toString)).bind()
       case "stdout" =>
         PrintlnDisplay(source).display()
-      case "twitter" =>
-        val twitterSource = TwitterSource.source(Config(ConfigFactory.load()))
-        PrintlnDisplay(twitterSource).display()
     }
   }
 }

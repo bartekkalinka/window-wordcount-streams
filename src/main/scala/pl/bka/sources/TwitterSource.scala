@@ -26,7 +26,7 @@ object TwitterSource {
   def source(config: Config)(implicit fm: Materializer, system: ActorSystem): Source[String, NotUsed] = {
     import system.dispatcher
     val (streamEntry: ActorRef, publisher: Publisher[String]) =
-      Source.actorRef[String](1000, OverflowStrategy.dropHead).toMat(Sink.asPublisher(fanout = false))((a, b) => (a, b)).run
+      Source.actorRef[String](1000, OverflowStrategy.dropHead).toMat(Sink.asPublisher(fanout = true))((a, b) => (a, b)).run
     Future(runTwitterClient(config, streamEntry))
     Source.fromPublisher(publisher)
   }
