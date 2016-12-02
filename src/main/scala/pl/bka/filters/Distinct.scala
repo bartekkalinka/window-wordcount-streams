@@ -1,4 +1,4 @@
-package pl.bka
+package pl.bka.filters
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow

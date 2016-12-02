@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
+import pl.bka.filters.Distinct
 import pl.bka.soruces.TextFileSource
 import pl.bka.sources.TwitterSource
 import pl.bka.windows.Top
@@ -22,6 +23,8 @@ object Main {
             .via(Distinct.distinct((0, "")))
         case "twitter" =>
           TwitterSource.source(Config(ConfigFactory.load()))
+            .via(Top.wordWithOccurence(5000, 3))
+            .via(Distinct.distinct((0, "")))
       }
     args(1) match {
       case "web" =>
