@@ -9,11 +9,16 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 
 case class WebsocketDisplay(dataSource: Source[String, NotUsed])(implicit fm: Materializer, system: ActorSystem) extends Directives {
-  private def route = path("window-streams") {
-    parameter('clientId) { clientId =>
-      handleWebSocketMessages(websocketFlow(sender = clientId))
-    }
-  }
+  private def route =
+    pathSingleSlash {
+      getFromResource("client/index.html")
+    } ~
+    path("window-streams") {
+      parameter('clientId) { clientId =>
+        handleWebSocketMessages(websocketFlow(sender = clientId))
+      }
+    } ~
+      getFromResourceDirectory("client")
 
   private def websocketFlow(sender: String): Flow[Message, Message, NotUsed] =
     Flow[Message]
