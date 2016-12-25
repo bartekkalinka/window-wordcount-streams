@@ -10,6 +10,8 @@ import pl.bka.sources.TwitterSource
 import pl.bka.windows.Top
 
 import scala.concurrent.duration._
+import spray.json._
+import DefaultJsonProtocol._
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -20,17 +22,17 @@ object Main {
         case "text" =>
           TextFileSource.words("input3.txt", 1.millis)
             .via(Top.nwords(500, 4, 4))
-            .via(Distinct.distinct((0, "")))
+            .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
           TwitterSource.source(Config(ConfigFactory.load()))
-            .via(Top.wordWithOccurence(5000, 3))
-            .via(Distinct.distinct((0, "")))
+            .via(Top.nwords(500, 4, 4))
+            .via(Distinct.distinct(Seq((0, ""))))
       }
     args(1) match {
       case "web" =>
-        WebsocketDisplay(source.map(_.toString)).bind()
+        WebsocketDisplay(source.map(_.toJson.toString)).bind()
       case "stdout" =>
-        PrintlnDisplay(source).display()
+        PrintlnDisplay(source.map(_.toJson.toString)).display()
     }
   }
 }
