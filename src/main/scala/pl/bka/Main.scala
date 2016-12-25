@@ -21,7 +21,7 @@ object Main {
       args(0) match {
         case "text" =>
           TextFileSource.words("input3.txt", 1.millis)
-            .via(Top.nwords(500, 4, 4))
+            .via(Top.nwords(1500, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
           TwitterSource.source(Config(ConfigFactory.load()))

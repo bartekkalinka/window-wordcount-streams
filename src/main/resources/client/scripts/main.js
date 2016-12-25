@@ -40,14 +40,17 @@ function doSend(message) {
 function draw(data) {
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    var leftMargin = 20;
+    var verticalStep = 60;
+    var horizontalStep = 10;
     for (var i = 0; i < data.length; i++) {
         var num = data[i][0];
         var word = data[i][1];
         ctx.fillStyle = "#8888FF";
-        ctx.fillRect(250, i * 60 + 60, num * 5, 59);
+        ctx.fillRect(leftMargin, i * verticalStep + verticalStep, num * horizontalStep, verticalStep - 1);
         ctx.font = "20px Arial";
         ctx.fillStyle = "#000000";
-        ctx.fillText(word, 250, i * 60 + 100);
+        ctx.fillText(word, leftMargin, i * verticalStep + verticalStep + verticalStep * 2 / 3);
     }
 }
 init();
