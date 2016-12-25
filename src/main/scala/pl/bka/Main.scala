@@ -18,8 +18,8 @@ object Main {
     val source =
       args(0) match {
         case "text" =>
-          TextFileSource.words("input3.txt", 10.millis)
-            .via(Top.wordWithOccurence(50, 3))
+          TextFileSource.words("input3.txt", 1.millis)
+            .via(Top.nwords(500, 4, 4))
             .via(Distinct.distinct((0, "")))
         case "twitter" =>
           TwitterSource.source(Config(ConfigFactory.load()))
