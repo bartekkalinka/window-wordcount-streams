@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
-import pl.bka.filters.Distinct
+import pl.bka.filters.{Distinct, WarmUpWindow}
 import pl.bka.soruces.TextFileSource
 import pl.bka.sources.TwitterSource
 import pl.bka.windows.Top
@@ -17,15 +17,16 @@ object Main {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
+    val windowSize = 15000
     val source =
       args(0) match {
         case "text" =>
-          TextFileSource.words("input3.txt", 1.millis)
-            .via(Top.nwords(1500, 6, 4))
+          WarmUpWindow.fakeWords(TextFileSource.words("input3.txt", 1.millis), windowSize)
+            .via(Top.nwordsSliding(windowSize, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
-          TwitterSource.source(Config(ConfigFactory.load()))
-            .via(Top.nwords(500, 4, 4))
+          WarmUpWindow.fakeWords(TwitterSource.source(Config(ConfigFactory.load())), windowSize)
+            .via(Top.nwordsSliding(windowSize, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
       }
     args(1) match {
