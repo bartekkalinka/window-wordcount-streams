@@ -18,17 +18,18 @@ object Main {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
     val windowSize = if(args.length >= 3) args(2).toInt else 5000
+    def minWordLength(default: Int) = if(args.length >= 4) args(3).toInt else default
     val source =
       args(0) match {
         case "text" =>
           WarmUpWindow.fakeWords(windowSize)
             .concat(TextFileSource.words("input3.txt", 100.nanos))
-            .via(Top.nwordsSliding(windowSize, 6, 5))
+            .via(Top.nwordsSliding(windowSize, 6, minWordLength(5)))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
           WarmUpWindow.fakeWords(windowSize)
             .concat(TwitterSource.source(Config(ConfigFactory.load())))
-            .via(Top.nwordsSliding(windowSize, 6, 1))
+            .via(Top.nwordsSliding(windowSize, 6, minWordLength(1)))
             .via(Distinct.distinct(Seq((0, ""))))
       }
     args(1) match {
