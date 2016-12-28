@@ -17,13 +17,13 @@ object Main {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
-    val windowSize = 15000
+    val windowSize = if(args.length >= 3) args(2).toInt else 5000
     val source =
       args(0) match {
         case "text" =>
           WarmUpWindow.fakeWords(windowSize)
             .concat(TextFileSource.words("input3.txt", 100.nanos))
-            .via(Top.nwordsSliding(windowSize, 6, 4))
+            .via(Top.nwordsSliding(windowSize, 6, 5))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
           WarmUpWindow.fakeWords(windowSize)
