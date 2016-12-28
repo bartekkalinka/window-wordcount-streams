@@ -50,7 +50,7 @@ function draw(data) {
         ctx.fillRect(leftMargin, i * verticalStep + verticalStep, num * horizontalStep, verticalStep - 1);
         ctx.font = "20px Arial";
         ctx.fillStyle = "#000000";
-        ctx.fillText(word, leftMargin, i * verticalStep + verticalStep + verticalStep * 2 / 3);
+        ctx.fillText(word + ": " + num, leftMargin, i * verticalStep + verticalStep + verticalStep * 2 / 3);
     }
 }
 init();
