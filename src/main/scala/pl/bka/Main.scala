@@ -21,11 +21,13 @@ object Main {
     val source =
       args(0) match {
         case "text" =>
-          WarmUpWindow.fakeWords(TextFileSource.words("input3.txt", 1.millis), windowSize)
+          WarmUpWindow.fakeWords(windowSize)
+            .concat(TextFileSource.words("input3.txt", 1.millis))
             .via(Top.nwordsSliding(windowSize, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
-          WarmUpWindow.fakeWords(TwitterSource.source(Config(ConfigFactory.load())), windowSize)
+          WarmUpWindow.fakeWords(windowSize)
+            .concat(TwitterSource.source(Config(ConfigFactory.load())))
             .via(Top.nwordsSliding(windowSize, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
       }
