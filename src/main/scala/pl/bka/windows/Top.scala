@@ -4,18 +4,15 @@ import akka.NotUsed
 import akka.stream.scaladsl.Flow
 
 object Top {
-  def nwordsSliding(windowSize: Int, topWordsNum: Int, minWordLength: Int = 1): Flow[String, List[(Int, String)], NotUsed] =
-    sliding(windowSize, nwordsFunction(topWordsNum, minWordLength))
-
-  private def sliding[A](windowSize: Int, windowFunction: Seq[String] => A): Flow[String, A, NotUsed] =
-    Flow[String].sliding(windowSize).map(windowFunction)
-
-  private def nwordsFunction(topWordsNum: Int, minWordLength: Int): Seq[String] => List[(Int, String)] = { window =>
-    window
-      .filter(_.length >= minWordLength)
-      .groupBy(identity).values.toSeq
-      .sortBy(_.length).reverse.take(topWordsNum).toList
-      .map { bestWordSeq => (bestWordSeq.length, bestWordSeq.head)}
-  }
+  def nwordsSliding(windowSize: Int, topWordsNum: Int, minWordLength: Int): Flow[String, List[(Int, String)], NotUsed] =
+    Flow[String].sliding(windowSize).scan(Map[String, Int]()) { case (map, window) =>
+        val out = window.head
+        val in = window.last
+        def outUpdated(m: Map[String, Int]) = m.get(out).map(_ - 1)
+        def inUpdated(m: Map[String, Int]) = m.get(in).map(_ + 1).orElse(Some(1)).filter(_ => in.length >= minWordLength)
+        def updateOut(m: Map[String, Int]) = outUpdated(m).map(upd => if(upd == 0) m - out else m.updated(out, upd)).getOrElse(m)
+        def updateIn(m: Map[String, Int]) = inUpdated(m).map(upd => m + (in -> upd)).getOrElse(m)
+        updateIn(updateOut(map))
+    }.map(_.toSeq.sortBy(_._2).reverse.take(topWordsNum).map(kv => (kv._2, kv._1)).toList)
 }
 

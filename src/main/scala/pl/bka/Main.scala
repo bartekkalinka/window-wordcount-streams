@@ -22,13 +22,13 @@ object Main {
       args(0) match {
         case "text" =>
           WarmUpWindow.fakeWords(windowSize)
-            .concat(TextFileSource.words("input3.txt", 1.millis))
+            .concat(TextFileSource.words("input3.txt", 100.nanos))
             .via(Top.nwordsSliding(windowSize, 6, 4))
             .via(Distinct.distinct(Seq((0, ""))))
         case "twitter" =>
           WarmUpWindow.fakeWords(windowSize)
             .concat(TwitterSource.source(Config(ConfigFactory.load())))
-            .via(Top.nwordsSliding(windowSize, 6, 4))
+            .via(Top.nwordsSliding(windowSize, 6, 1))
             .via(Distinct.distinct(Seq((0, ""))))
       }
     args(1) match {
