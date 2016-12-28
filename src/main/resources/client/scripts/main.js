@@ -42,7 +42,7 @@ function draw(data) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     var leftMargin = 20;
     var verticalStep = 60;
-    var horizontalStep = 10;
+    var horizontalStep = (canvas.width - leftMargin) / data[0][0];
     for (var i = 0; i < data.length; i++) {
         var num = data[i][0];
         var word = data[i][1];
