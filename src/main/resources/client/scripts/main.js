@@ -30,17 +30,23 @@ function onOpen(evt) {
 function onClose(evt) {
 }
 function onMessage(evt) {
-    var data = JSON.parse(evt.data).counts;
-    draw(data);
+    var input = JSON.parse(evt.data);
+    if(input.counts) {
+        draw(input.counts);
+    }
+    if(input.beat) {
+        heartbeat(true);
+        setTimeout(function() { heartbeat(false); }, 500);
+    }
 }
 function onError(evt) {
 }
 function doSend(message) {
 }
 function draw(data) {
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     var leftMargin = 20;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(leftMargin, 0, canvas.width - leftMargin, canvas.height);
     var verticalStep = 60;
     var horizontalStep = (canvas.width - leftMargin) / data[0][0];
     for (var i = 0; i < data.length; i++) {
@@ -52,5 +58,9 @@ function draw(data) {
         ctx.fillStyle = "#000000";
         ctx.fillText(word + ": " + num, leftMargin, i * verticalStep + verticalStep + verticalStep * 2 / 3);
     }
+}
+function heartbeat(on) {
+    if(on) ctx.fillStyle = "#000000"; else ctx.fillStyle = "#FFFFFF"
+    ctx.fillRect(0, 0, 20, 20);
 }
 init();
