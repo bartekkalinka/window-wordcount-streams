@@ -1,4 +1,4 @@
-package pl.bka.soruces
+package pl.bka.sources
 
 import akka.NotUsed
 import akka.stream.ThrottleMode
