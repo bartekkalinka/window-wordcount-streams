@@ -4,12 +4,13 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, ThrottleMode}
 import akka.stream.scaladsl.{Sink, Source}
+import pl.bka.WindowWordCounts
 
 import scala.concurrent.duration.FiniteDuration
 
 object DebugSource {
-  def apply(topWordsNum: Int, interval: FiniteDuration, throughPublisher: Boolean)(implicit fm: Materializer, system: ActorSystem): Source[Seq[(Int, String)], NotUsed] = {
-    val normal = normalSource(topWordsNum, interval)
+  def apply(topWordsNum: Int, interval: FiniteDuration, throughPublisher: Boolean)(implicit fm: Materializer, system: ActorSystem): Source[WindowWordCounts, NotUsed] = {
+    val normal = normalSource(topWordsNum, interval).map(seq => WindowWordCounts(seq.toList))
     if(throughPublisher) sourceThroughPublisher(normal) else normal
   }
 
@@ -19,7 +20,7 @@ object DebugSource {
       .sliding(topWordsNum)
       .throttle(1, interval, 1, ThrottleMode.Shaping)
 
-  private def sourceThroughPublisher(normal: Source[Seq[(Int, String)], NotUsed])(implicit fm: Materializer, system: ActorSystem): Source[Seq[(Int, String)], NotUsed] =
+  private def sourceThroughPublisher[A](normal: Source[A, NotUsed])(implicit fm: Materializer, system: ActorSystem): Source[A, NotUsed] =
     Source.fromPublisher(normal.toMat(Sink.asPublisher(fanout = true))((a, b) => b).run)
 }
 

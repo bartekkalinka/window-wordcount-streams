@@ -30,7 +30,7 @@ function onOpen(evt) {
 function onClose(evt) {
 }
 function onMessage(evt) {
-    var data = JSON.parse(evt.data);
+    var data = JSON.parse(evt.data).counts;
     draw(data);
 }
 function onError(evt) {

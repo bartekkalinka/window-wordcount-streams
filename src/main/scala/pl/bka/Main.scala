@@ -10,9 +10,8 @@ import pl.bka.windows.Top
 
 import scala.concurrent.duration._
 import spray.json._
-import DefaultJsonProtocol._
 
-object Main {
+object Main extends JsonProtocols {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
@@ -26,12 +25,12 @@ object Main {
           WarmUpWindow.fakeWords(windowSize)
             .concat(TextFileSource.words("input3.txt", 10.millis))
             .via(Top.nwordsSliding(windowSize, 6, minWordLength(5)))
-            .via(Distinct.distinct(Seq((0, ""))))
+            .via(Distinct.distinct(WindowWordCounts.zero))
         case "twitter" =>
           WarmUpWindow.fakeWords(windowSize)
             .concat(TwitterSource.source(Config(ConfigFactory.load())))
             .via(Top.nwordsSliding(windowSize, 6, minWordLength(1)))
-            .via(Distinct.distinct(Seq((0, ""))))
+            .via(Distinct.distinct[WindowWordCounts](WindowWordCounts.zero))
       }
     args(1) match {
       case "web" =>

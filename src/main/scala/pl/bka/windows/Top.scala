@@ -2,9 +2,10 @@ package pl.bka.windows
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
+import pl.bka.WindowWordCounts
 
 object Top {
-  def nwordsSliding(windowSize: Int, topWordsNum: Int, minWordLength: Int): Flow[String, List[(Int, String)], NotUsed] =
+  def nwordsSliding(windowSize: Int, topWordsNum: Int, minWordLength: Int): Flow[String, WindowWordCounts, NotUsed] =
     Flow[String].sliding(windowSize).scan(Map[String, Int]()) { case (map, window) =>
         val out = window.head
         val in = window.last
@@ -14,5 +15,6 @@ object Top {
         def updateIn(m: Map[String, Int]) = inUpdated(m).map(upd => m + (in -> upd)).getOrElse(m)
         updateIn(updateOut(map))
     }.map(_.toSeq.sortBy(_._2).reverse.take(topWordsNum).map(kv => (kv._2, kv._1)).toList)
+     .map(WindowWordCounts(_))
 }
 
