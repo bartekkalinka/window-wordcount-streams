@@ -1,7 +1,9 @@
 package pl.bka
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
 import pl.bka.filters.{AddTimestamp, Distinct, HeartBeatMerge, WarmUpWindow}
@@ -17,25 +19,21 @@ object Main {
     implicit val materializer = ActorMaterializer()
     val windowSize = if(args.length >= 3) args(2).toInt else 5000
     def minWordLength(default: Int) = if(args.length >= 4) args(3).toInt else default
+    def mainPipeOn(source: Source[String, NotUsed], windowSize: Int): Source[Message, NotUsed] =
+      WarmUpWindow.fakeWords(windowSize)
+        .concat(source)
+        .via(AddTimestamp.flow)
+        .via(Top.nwordsSliding(windowSize, 6, minWordLength(5)))
+        .via(Distinct.window)
+        .via(HeartBeatMerge.flow)
     val source =
       args(0) match {
         case "debug" =>
-          DebugSource(6, 10.millis, throughPublisher = true)
-            .via(HeartBeatMerge.flow)
+          DebugSource(6, 10.millis, throughPublisher = true).via(HeartBeatMerge.flow)
         case "text" =>
-          WarmUpWindow.fakeWords(windowSize)
-            .concat(TextFileSource.words("input3.txt", 1.millis))
-            .via(AddTimestamp.flow)
-            .via(Top.nwordsSliding(windowSize, 6, minWordLength(5)))
-            .via(Distinct.window)
-            .via(HeartBeatMerge.flow)
+          mainPipeOn(TextFileSource.words("input3.txt", 1.millis), windowSize)
         case "twitter" =>
-          WarmUpWindow.fakeWords(windowSize)
-            .concat(TwitterSource.source(Config(ConfigFactory.load())))
-            .via(AddTimestamp.flow)
-            .via(Top.nwordsSliding(windowSize, 6, minWordLength(1)))
-            .via(Distinct.window)
-            .via(HeartBeatMerge.flow)
+          mainPipeOn(TwitterSource.source(Config(ConfigFactory.load())), windowSize)
       }
     args(1) match {
       case "web" =>
