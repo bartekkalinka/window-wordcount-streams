@@ -3,7 +3,7 @@ package pl.bka.filters
 import akka.NotUsed
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.{Flow, Source}
-import pl.bka.{HeartBeat, Message}
+import pl.bka.model.{HeartBeat, Message}
 
 import scala.concurrent.duration._
 

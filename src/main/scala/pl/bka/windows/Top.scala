@@ -2,7 +2,7 @@ package pl.bka.windows
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
-import pl.bka.WindowWordCounts
+import pl.bka.model.WindowWordCounts
 
 object Top {
   def nwordsSliding(windowSize: Int, topWordsNum: Int, minWordLength: Int): Flow[String, WindowWordCounts, NotUsed] =

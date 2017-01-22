@@ -5,6 +5,7 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
 import pl.bka.filters.{Distinct, HeartBeatMerge, WarmUpWindow}
+import pl.bka.model.{Message, WindowWordCounts}
 import pl.bka.sources.{DebugSource, TextFileSource, TwitterSource}
 import pl.bka.windows.Top
 

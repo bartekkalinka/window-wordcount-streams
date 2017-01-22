@@ -4,7 +4,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, ThrottleMode}
 import akka.stream.scaladsl.{Sink, Source}
-import pl.bka.WindowWordCounts
+import pl.bka.model.WindowWordCounts
 
 import scala.concurrent.duration.FiniteDuration
 
