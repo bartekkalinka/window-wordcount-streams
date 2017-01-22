@@ -7,7 +7,7 @@ import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
 import pl.bka.filters.{AddTimestamp, Distinct, HeartBeatMerge, WarmUpWindow}
-import pl.bka.model.{Message, WindowWordCounts}
+import pl.bka.model.InternalMessage
 import pl.bka.sources.{DebugSource, TextFileSource, TwitterSource}
 import pl.bka.windows.Top
 
@@ -19,7 +19,7 @@ object Main {
     implicit val materializer = ActorMaterializer()
     val windowSize = if(args.length >= 3) args(2).toInt else 5000
     def minWordLength(default: Int) = if(args.length >= 4) args(3).toInt else default
-    def mainPipeOn(source: Source[String, NotUsed], windowSize: Int): Source[Message, NotUsed] =
+    def mainPipeOn(source: Source[String, NotUsed], windowSize: Int): Source[InternalMessage, NotUsed] =
       WarmUpWindow.fakeWords(windowSize)
         .concat(source)
         .via(AddTimestamp.flow)
@@ -37,9 +37,9 @@ object Main {
       }
     args(1) match {
       case "web" =>
-        WebsocketDisplay(source.map(Message.toJson)).bind()
+        WebsocketDisplay(source.map(InternalMessage.toJson)).bind()
       case "stdout" =>
-        PrintlnDisplay(source.map(Message.toJson)).display()
+        PrintlnDisplay(source.map(InternalMessage.toJson)).display()
     }
   }
 }
