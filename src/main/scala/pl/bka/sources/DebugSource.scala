@@ -10,7 +10,7 @@ import scala.concurrent.duration.FiniteDuration
 
 object DebugSource {
   def apply(topWordsNum: Int, interval: FiniteDuration, throughPublisher: Boolean)(implicit fm: Materializer, system: ActorSystem): Source[WindowWordCounts, NotUsed] = {
-    val normal = normalSource(topWordsNum, interval).map(seq => WindowWordCounts(seq.toList))
+    val normal = normalSource(topWordsNum, interval).map(seq => WindowWordCounts(seq.toList, 0L))
     if(throughPublisher) sourceThroughPublisher(normal) else normal
   }
 

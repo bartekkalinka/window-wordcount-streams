@@ -4,6 +4,7 @@ var wsUri = "ws://" + window.location.hostname + ":" + window.location.port + "/
 var websocket;
 var canvas = document.getElementById("canv");
 var ctx = canvas.getContext("2d");
+var leftMargin = 20;
 
 // INIT MODULE
 function init() {
@@ -32,19 +33,19 @@ function onClose(evt) {
 function onMessage(evt) {
     var input = JSON.parse(evt.data);
     if(input.counts) {
-        draw(input.counts);
+        drawCountsFigures(input.counts);
+        drawInterval(input.interval);
     }
     if(input.beat) {
-        heartbeat(true);
-        setTimeout(function() { heartbeat(false); }, 500);
+        drawHeartbeat(true);
+        setTimeout(function() { drawHeartbeat(false); }, 500);
     }
 }
 function onError(evt) {
 }
 function doSend(message) {
 }
-function draw(data) {
-    var leftMargin = 20;
+function drawCountsFigures(data) {
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(leftMargin, 0, canvas.width - leftMargin, canvas.height);
     var verticalStep = 60;
@@ -59,8 +60,13 @@ function draw(data) {
         ctx.fillText(word + ": " + num, leftMargin, i * verticalStep + verticalStep + verticalStep * 2 / 3);
     }
 }
-function heartbeat(on) {
-    if(on) ctx.fillStyle = "#000000"; else ctx.fillStyle = "#FFFFFF"
-    ctx.fillRect(0, 0, 20, 20);
+function drawHeartbeat(heartbeatOn) {
+    if(heartbeatOn) ctx.fillStyle = "#000000"; else ctx.fillStyle = "#FFFFFF"
+    ctx.fillRect(0, 0, leftMargin, 20);
+}
+function drawInterval(interval) {
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#000000";
+    ctx.fillText("window interval: " + interval + " ms", leftMargin + 10, 20);
 }
 init();
