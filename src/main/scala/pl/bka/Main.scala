@@ -6,7 +6,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import pl.bka.displays.{PrintlnDisplay, WebsocketDisplay}
-import pl.bka.filters.{AddTimestamp, Distinct, HeartBeatMerge, WarmUpWindow}
+import pl.bka.filters._
 import pl.bka.model.InternalMessage
 import pl.bka.sources.{DebugSource, TextFileSource, TwitterSource}
 import pl.bka.windows.Top
@@ -37,7 +37,8 @@ object Main {
       }
     args(1) match {
       case "web" =>
-        WebsocketDisplay(source.map(InternalMessage.toJson)).bind()
+        val publishedSource = RunWithPublisher.source(source.map(InternalMessage.toJson))._1
+        WebsocketDisplay(publishedSource).bind()
       case "stdout" =>
         PrintlnDisplay(source.map(InternalMessage.toJson)).display()
     }
