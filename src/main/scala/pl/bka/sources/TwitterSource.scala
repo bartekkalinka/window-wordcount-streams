@@ -18,6 +18,7 @@ import com.twitter.hbc.twitter4j.handler.StatusStreamHandler
 import com.twitter.hbc.twitter4j.message.{DisconnectMessage, StallWarningMessage}
 import org.reactivestreams.Publisher
 import pl.bka.Config
+import pl.bka.filters.RunWithPublisher
 import twitter4j.{StallWarning, Status, StatusDeletionNotice}
 
 import scala.concurrent.Future
@@ -25,10 +26,10 @@ import scala.concurrent.Future
 object TwitterSource {
   def source(config: Config)(implicit fm: Materializer, system: ActorSystem): Source[String, NotUsed] = {
     import system.dispatcher
-    val (streamEntry: ActorRef, publisher: Publisher[String]) =
-      Source.actorRef[String](1000, OverflowStrategy.dropHead).toMat(Sink.asPublisher(fanout = true))((a, b) => (a, b)).run
+    val source = Source.actorRef[String](1000, OverflowStrategy.dropHead)
+    val (publisherSource, streamEntry: ActorRef) = RunWithPublisher.source(source)
     Future(runTwitterClient(config, streamEntry))
-    Source.fromPublisher(publisher)
+    publisherSource
   }
 
   private def runTwitterClient(config: Config, streamEntry: ActorRef) {
