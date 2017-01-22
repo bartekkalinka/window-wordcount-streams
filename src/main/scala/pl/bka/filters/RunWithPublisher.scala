@@ -6,7 +6,9 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 
 object RunWithPublisher {
-  def source[A](normal: Source[A, NotUsed])(implicit fm: Materializer, system: ActorSystem): Source[A, NotUsed] =
-    Source.fromPublisher(normal.toMat(Sink.asPublisher(fanout = true))((a, b) => b).run)
+  def source[A, M](normal: Source[A, M])(implicit fm: Materializer, system: ActorSystem): (Source[A, NotUsed], M) = {
+    val (normalMat, publisher) = normal.toMat(Sink.asPublisher(fanout = true))((a, b) => (a, b)).run
+    (Source.fromPublisher(publisher), normalMat)
+  }
 }
 
