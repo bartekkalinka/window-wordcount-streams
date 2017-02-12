@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
+enablePlugins(DockerPlugin)
+
 libraryDependencies ++= {
   val akkaV = "2.4.11"
   Seq(
@@ -16,4 +18,16 @@ libraryDependencies ++= {
 }
 
 mainClass := Some("Main")
+
+dockerfile in docker := {
+  // The assembly task generates a fat JAR file
+  val artifact: File = assembly.value
+  val artifactTargetPath = s"/app/${artifact.name}"
+
+  new Dockerfile {
+    from("java")
+    add(artifact, artifactTargetPath)
+    entryPoint("java", "-jar", artifactTargetPath)
+  }
+}
     
