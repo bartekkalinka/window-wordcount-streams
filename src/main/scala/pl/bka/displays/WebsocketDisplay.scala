@@ -29,7 +29,6 @@ case class WebsocketDisplay(dataSource: Source[String, NotUsed])(implicit fm: Ma
   private def logicFlow: Flow[String, String, NotUsed] = Flow.fromSinkAndSource(Sink.ignore, dataSource)
 
   def bind() = {
-    dataSource.to(Sink.ignore).run //a hack to keep the source alive even if all clients disconnect
     Http().bindAndHandle(route, "0.0.0.0", 9000)
   }
 }
