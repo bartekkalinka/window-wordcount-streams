@@ -37,7 +37,7 @@ object Main {
       }
     args(1) match {
       case "web" =>
-        val publishedSource = RunWithPublisher.source(source.map(InternalMessage.toJson))._1
+        val publishedSource = RunWithHub.source(source.map(InternalMessage.toJson))._1
         WebsocketDisplay(publishedSource).bind()
       case "stdout" =>
         PrintlnDisplay(source.map(InternalMessage.toJson)).display()
